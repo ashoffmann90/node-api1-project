@@ -37,7 +37,7 @@ server.get('/api/users/:id', (req, res) => {
     const userById = users.filter(user => user.id == id)
     
     if(res) {
-        if(id === undefined){
+        if(!userById){
             res.status(404).json({ message: "The user with the specified ID does not exist." })
         } else {
             res.status(200).json(userById)
@@ -64,18 +64,36 @@ server.post('/api/users', (req, res) => {
 
 server.patch('/api/users/:id', (req, res) => {
     const id = req.params.id
-    const getUser = users.filter(user => user.id == id)
+    const userById = users.find(user => user.id == id)
     const userInfo = req.body
-    let newUsers
+    const {name, bio} = userInfo
+    // let newUsers
 
     if(res){
-        if (id === undefined){
+        if (!userById){
             res.status(404).json({ message: "The user with the specified ID does not exist." })
-        } else if (!userInfo.name || !userInfo.bio) {
+        } else if (!name || !bio) {
             res.status(400).json({ errorMessage: "Please provide name and bio for the user." })
         } else {
-            users.push(newUsers)
-            res.status(200).json(userInfo)
+            userById.name = name
+            userById.bio = bio
+            res.status(200).json({message: 'User Added'})
+            // newUsers = users.filter(user => user.id != id)
+            // const alteredUser = {
+            //     id: id,
+            //     name: userInfo.name,
+            //     bio: userInfo.bio
+            // }
+            // newUsers.push(alteredUser)
+            // res.status(200).json({alt_user: alteredUser, newUsers})
+            
+            // if (userInfo.id === id){
+            //     newUsers.push(userInfo)
+            // } else {
+            //     newUsers.push(userInfo)
+            //     res.status(200).json(newUsers)
+            //     users = newUsers
+            // }
         }
     } else {
         res.status(500).json({ errorMessage: "The user information could not be modified." })
@@ -85,7 +103,15 @@ server.patch('/api/users/:id', (req, res) => {
 server.delete('/api/users/:id', (req, res) => {
     const id = req.params.id
     const userById = users.filter(user => user.id != id)
-    res.status(202).json(userById)
+    if (!userById){
+        res.server(404).json({ message: "The user with the specified ID does not exist." })
+    } else {
+        users = users.filter(user => user.id !== id)
+        res.status(200).json(userById)
+    }
+    if(!res){
+        res.status(500).json({ errorMessage: "The user could not be removed" })
+    }
 })
 
 server.listen(4000, () => console.log('\n== API is up ==\n'))
